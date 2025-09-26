@@ -1,0 +1,9 @@
+{
+  "high_score": 0,
+  "total_trash": 0,
+  "sound_enabled": true,
+  "owned_trash_colors": [],
+  "owned_obstacle_colors": [],
+  "selected_trash_color": "Standaard",
+  "selected_obstacle_color": "Standaard"
+}

@@ -1,0 +1,19 @@
+{
+  "high_score": 11,
+  "total_trash": 99230,
+  "sound_enabled": false,
+  "owned_trash_colors": [
+    "Gold"
+  ],
+  "owned_obstacle_colors": [
+    "Chrome"
+  ],
+  "selected_trash_color": "Gold",
+  "selected_obstacle_color": "Chrome",
+  "owned_characters": [
+    "Standaard",
+    "Jitse",
+    "Vince"
+  ],
+  "selected_character": "Standaard"
+}
