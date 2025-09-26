@@ -21,7 +21,7 @@ running = True
 current_state = "menu"
 
 clock = pygame.time.Clock()
-
+ 
 # Data bestand
 SAVE_FILE = "patty_runner_data.json"
 
@@ -36,19 +36,21 @@ GRAVITY = 0.6
 MAX_JUMPS = 1
 
 # Player visuals
-
-
+playerVisual = Animation()
+playerVisual.setPaths(["./burger.png"])
+playerVisual.setSize((PLAYER_WIDTH, PLAYER_HEIGHT))
+ 
 # Vallende objecten
 FALL_SPEED_MIN = 5
 FALL_SPEED_MAX = 12
 SPAWN_INTERVAL_MIN = 300
 SPAWN_INTERVAL_MAX = 800
-
+ 
 # Objecten
 TRASH_SIZE = 32
 OBSTACLE_WIDTH = 44
 OBSTACLE_HEIGHT = 60
-
+ 
 # Kleuren
 SKY_TOP = (135, 206, 250)
 SKY_BOTTOM = (176, 224, 230)
@@ -58,7 +60,6 @@ TEXT_SHADOW = (0, 0, 0)
 MENU_BG = (40, 40, 60)
 BUTTON_COLOR = (70, 130, 180)
 BUTTON_HOVER = (100, 160, 210)
-
 
 class Object():
     def __init__(self, height, width, color, x, y):
@@ -70,18 +71,17 @@ class Object():
 
     def Draw(self, surface):
         pygame.draw.rect(surface, self.color, (self.x, self.y, self.width, self.height))
-
+    
     def MoveDown(self, speed):
         self.y += speed
-
+    
     def get_rect(self):
         """Return pygame.Rect for collision detection"""
         return pygame.Rect(self.x, self.y, self.width, self.height)
-
+    
     def collides_with(self, other):
         """Check collision with another Object"""
         return self.get_rect().colliderect(other.get_rect())
-
 
 class Player(Object):
     def __init__(self, height, width, color, x, y):
@@ -96,32 +96,31 @@ class Player(Object):
     def MoveRight(self, speed):
         self.x += speed
         self.x = min(self.x, WINDOW_WIDTH - self.width)  # Don't go off right edge
-
+    
     def Jump(self):
         if self.jumps_left > 0:
             self.y_velocity = PLAYER_JUMP_VELOCITY
             self.jumps_left -= 1
-
+    
     def Update(self):
         """Update player physics"""
         self.y_velocity += GRAVITY
         self.y += int(self.y_velocity)
-
+        
         # Ground collision
         if self.y >= PLAYER_Y_BASE:
             self.y = PLAYER_Y_BASE
             self.y_velocity = 0.0
             self.jumps_left = MAX_JUMPS
-
+        
         # Ceiling collision
         if self.y < 20:
             self.y = 20
             self.y_velocity = 0.0
-
+    
     def DrawBurger(self, surface):
         playerVisual.setPos((self.x, self.y))
         playerVisual.drawFrame(SCREEN, 0)
-
 
 class FallingItem(Object):
     def __init__(self, x, y, width, height, fall_speed, item_type, colors=None):
@@ -133,37 +132,36 @@ class FallingItem(Object):
         self.colors = colors or [(255, 255, 255)]
         self.color_index = random.randint(0, len(self.colors) - 1)
         self.color = self.colors[self.color_index]
-
+   
     def Update(self):
         self.MoveDown(self.fall_speed)
-
+   
     def is_off_SCREEN(self):
         return self.y > WINDOW_HEIGHT
-
+    
     def DrawTrash(self, surface):
         """Draw as trash with custom colors"""
         pygame.draw.rect(surface, self.color, self.get_rect(), border_radius=6)
-        pygame.draw.rect(surface, (230, 230, 230),
-                         (self.x + self.width // 4, self.y, self.width // 2, 6), border_radius=3)
-
+        pygame.draw.rect(surface, (230, 230, 230), 
+                        (self.x + self.width // 4, self.y, self.width // 2, 6), border_radius=3)
+    
     def DrawObstacle(self, surface):
         """Draw as obstacle (trash can) with custom colors"""
         rect = self.get_rect()
         pygame.draw.rect(surface, self.colors[0], rect, border_radius=6)
         pygame.draw.rect(surface, self.colors[1], (self.x, self.y, self.width, 8))
-        pygame.draw.rect(surface, self.colors[2],
-                         (self.x + 6, self.y + 10, self.width - 12, self.height - 20))
-
-
+        pygame.draw.rect(surface, self.colors[2], 
+                        (self.x + 6, self.y + 10, self.width - 12, self.height - 20))
+ 
 # Shop items
 TRASH_COLORS = {
     "Standaard": [(200, 30, 30), (30, 30, 200), (200, 200, 30)],
     "Galaxy": [(138, 43, 226), (72, 61, 139), (25, 25, 112)],
     "Neon": [(57, 255, 20), (255, 20, 147), (0, 191, 255)],
-    "Gold": [(255, 215, 0), (255, 140, 0), (218, 165, 32)],
+    "Goud": [(255, 215, 0), (255, 140, 0), (218, 165, 32)],
     "Regenboog": [(255, 0, 127), (127, 255, 0), (0, 127, 255)]
 }
-
+ 
 OBSTACLE_COLORS = {
     "Standaard": [(100, 100, 100), (150, 150, 150), (60, 60, 60)],
     "Roest": [(139, 69, 19), (160, 82, 45), (101, 67, 33)],
@@ -171,24 +169,12 @@ OBSTACLE_COLORS = {
     "Groen": [(34, 139, 34), (50, 205, 50), (0, 100, 0)],
     "Paars": [(75, 0, 130), (138, 43, 226), (147, 112, 219)]
 }
-
+ 
 ITEM_PRICES = {
-    "Pastel": 50, "Neon": 100, "Gold": 200, "Regenboog": 500,
+    "Pastel": 50, "Neon": 100, "Goud": 200, "Regenboog": 500,
     "Roest": 30, "Chrome": 80, "Groen": 120, "Paars": 300
 }
-
-CHARACTERS = {
-    "Standaard": {"preview": "./burger.png"},
-    "Vince": {"preview": "./vince.png"},
-    "Jitse": {"preview": "./jitse.png"}
-}
-
-CHARACTER_PRICES = {
-    "Vince": 200,
-    "Jitse": 300
-}
-
-
+ 
 # ---------------------------
 # Data management
 # ---------------------------
@@ -201,11 +187,9 @@ def load_game_data():
         "owned_trash_colors": ["Standaard"],
         "owned_obstacle_colors": ["Standaard"],
         "selected_trash_color": "Standaard",
-        "selected_obstacle_color": "Standaard",
-        "owned_characters": ["Standaard"],  # nieuw
-        "selected_character": "Standaard"  # nieuw
+        "selected_obstacle_color": "Standaard"
     }
-
+   
     if os.path.exists(SAVE_FILE):
         try:
             with open(SAVE_FILE, 'r') as f:
@@ -218,8 +202,7 @@ def load_game_data():
         except:
             return default_data
     return default_data
-
-
+ 
 def save_game_data(data):
     """Sla data op"""
     try:
@@ -227,8 +210,7 @@ def save_game_data(data):
             json.dump(data, f, indent=2)
     except:
         pass
-
-
+ 
 # ---------------------------
 # Tekenfuncties
 # ---------------------------
@@ -243,8 +225,7 @@ def draw_background(surface, clouds):
     pygame.draw.rect(surface, GRASS, (0, PLAYER_Y_BASE + PLAYER_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT))
     for cloud in clouds:
         pygame.draw.ellipse(surface, (255, 255, 255), cloud)
-
-
+ 
 def render_text(surface, text, font, pos, color, shadow_color=None):
     """Tekst met optionele schaduw"""
     if shadow_color:
@@ -252,8 +233,7 @@ def render_text(surface, text, font, pos, color, shadow_color=None):
         surface.blit(shadow, (pos[0] + 2, pos[1] + 2))
     surf = font.render(text, True, color)
     surface.blit(surf, pos)
-
-
+ 
 def draw_button(surface, rect, text, font, hovered=False):
     """Teken knop"""
     color = BUTTON_HOVER if hovered else BUTTON_COLOR
@@ -262,8 +242,7 @@ def draw_button(surface, rect, text, font, hovered=False):
     text_surf = font.render(text, True, TEXT_COLOR)
     text_rect = text_surf.get_rect(center=rect.center)
     surface.blit(text_surf, text_rect)
-
-
+ 
 # ---------------------------
 # Button class
 # ---------------------------
@@ -273,7 +252,7 @@ class Button:
         self.text = text
         self.font = font
         self.hovered = False
-
+   
     def handle_event(self, event):
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
@@ -281,24 +260,23 @@ class Button:
             if self.hovered:
                 return True
         return False
-
+   
     def draw(self, surface):
         draw_button(surface, self.rect, self.text, self.font, self.hovered)
-
-
+ 
 # ---------------------------
 # Game States
 # ---------------------------
 def show_start_menu(SCREEN, font, big_font, game_data):
     clock = pygame.time.Clock()
-
+   
     # Knoppen
-    start_btn = Button(WINDOW_WIDTH // 2 - 100, 200, 200, 50, "START SPEL", font)
-    shop_btn = Button(WINDOW_WIDTH // 2 - 100, 270, 200, 50, "SHOP", font)
-    sound_btn = Button(WINDOW_WIDTH // 2 - 100, 340, 200, 50,
-                       f"GELUID: {'AAN' if game_data['sound_enabled'] else 'UIT'}", font)
-    quit_btn = Button(WINDOW_WIDTH // 2 - 100, 410, 200, 50, "AFSLUITEN", font)
-
+    start_btn = Button(WINDOW_WIDTH//2 - 100, 200, 200, 50, "START SPEL", font)
+    shop_btn = Button(WINDOW_WIDTH//2 - 100, 270, 200, 50, "SHOP", font)
+    sound_btn = Button(WINDOW_WIDTH//2 - 100, 340, 200, 50,
+                      f"GELUID: {'AAN' if game_data['sound_enabled'] else 'UIT'}", font)
+    quit_btn = Button(WINDOW_WIDTH//2 - 100, 410, 200, 50, "AFSLUITEN", font)
+   
     buttons = [start_btn, shop_btn, sound_btn, quit_btn]
 
     while True:
@@ -346,7 +324,7 @@ def show_start_menu(SCREEN, font, big_font, game_data):
 
         # Titel
         title = big_font.render("PATTY DADIES RUNNER", True, TEXT_COLOR)
-        title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, 100))
+        title_rect = title.get_rect(center=(WINDOW_WIDTH//2, 100))
         SCREEN.blit(title, title_rect)
 
         # Stats
@@ -362,6 +340,7 @@ def show_start_menu(SCREEN, font, big_font, game_data):
         clock.tick(FPS)
 
 
+ 
 def show_shop(SCREEN, font, big_font, game_data):
     """Professional shop interface with modern design"""
     clock = pygame.time.Clock()
@@ -391,7 +370,6 @@ def show_shop(SCREEN, font, big_font, game_data):
     back_btn = Button(30, 30, 120, 45, "← TERUG", font)
     trash_tab = Button(200, 90, 150, 40, "AFVAL", font)
     obstacle_tab = Button(360, 90, 150, 40, "OBSTAKELS", font)
-    character_tab = Button(520, 90, 150, 40, "CHARACTER", font)
 
     def draw_professional_button(surface, rect, text, font, style="primary", hovered=False, disabled=False):
         """Draw modern button with various styles"""
@@ -429,65 +407,80 @@ def show_shop(SCREEN, font, big_font, game_data):
         surface.blit(text_surf, text_rect)
 
     def draw_item_card(surface, x, y, width, height, item_data, hovered=False):
+        """Draw professional item card"""
         card_rect = pygame.Rect(x, y, width, height)
 
-        # Card background + border
+        # Card shadow
         shadow_rect = pygame.Rect(x + 3, y + 3, width, height)
         pygame.draw.rect(surface, (0, 0, 0, 30), shadow_rect, border_radius=12)
-        card_color = CARD_BG if not hovered else tuple(min(255, c + 15) for c in CARD_BG)
+
+        # Card background
+        card_color = CARD_BG
+        if hovered:
+            card_color = tuple(min(255, c + 15) for c in CARD_BG)
+
         pygame.draw.rect(surface, card_color, card_rect, border_radius=12)
         pygame.draw.rect(surface, BORDER_COLOR, card_rect, 2, border_radius=12)
 
-        # Data
+        # Content
         name = item_data['name']
+        colors = item_data['colors']
         price = item_data['price']
         owned = item_data['owned']
         selected = item_data['selected']
         can_afford = item_data['can_afford']
 
-        # Titel
+        # Item name
         name_surf = subtitle_font.render(name, True, TEXT_PRIMARY)
         surface.blit(name_surf, (x + 20, y + 15))
 
-        # === PREVIEW ===
-        if 'preview' in item_data:  # character
-            preview_img = pygame.image.load(item_data['preview']).convert_alpha()
-            preview_img = pygame.transform.scale(preview_img, (60, 60))
-            surface.blit(preview_img, (x + 300, y + 40))
-        else:  # kleurtjes
-            preview_x = x + 20
-            preview_y = y + 50
-            for i, color in enumerate(item_data['colors']):
-                color_rect = pygame.Rect(preview_x + i * 35, preview_y, 30, 30)
-                pygame.draw.rect(surface, color, color_rect, border_radius=6)
-                pygame.draw.rect(surface, (255, 255, 255), color_rect, 2, border_radius=6)
+        # Color preview
+        preview_x = x + 20
+        preview_y = y + 50
+        for i, color in enumerate(colors):
+            color_rect = pygame.Rect(preview_x + i * 35, preview_y, 30, 30)
+            pygame.draw.rect(surface, color, color_rect, border_radius=6)
+            pygame.draw.rect(surface, (255, 255, 255), color_rect, 2, border_radius=6)
 
-        # === STATUS ===
+        # Status and price
         if owned:
-            status_text = "PURCHASED"
+            status_text = "GEKOCHT"
             status_color = SUCCESS_COLOR
+
+            # Selection indicator
             if selected:
                 indicator_rect = pygame.Rect(x + width - 40, y + 15, 25, 25)
                 pygame.draw.circle(surface, SUCCESS_COLOR, indicator_rect.center, 12)
                 pygame.draw.circle(surface, (255, 255, 255), indicator_rect.center, 6)
-
-            # TEKEN KNOP: USE / DESELECT
-            if selected:
-                deselect_rect = pygame.Rect(x + width - 90, y + height - 45, 80, 30)
-                draw_professional_button(surface, deselect_rect, "DESELECT", body_font, style="warning")
-            else:
-                use_rect = pygame.Rect(x + width - 180, y + height - 45, 80, 30)
-                draw_professional_button(surface, use_rect, "USE", body_font, style="success")
-
         else:
-            status_text = f"{price} trash"
+            status_text = f"{price} afval"
             status_color = TEXT_PRIMARY if can_afford else DANGER_COLOR
-            # TEKEN KNOP: BUY
-            buy_rect = pygame.Rect(x + width - 100, y + height - 45, 90, 30)
-            draw_professional_button(surface, buy_rect, "BUY", body_font, style="primary", disabled=not can_afford)
 
         status_surf = body_font.render(status_text, True, status_color)
-        surface.blit(status_surf, (x + 20, y + 120))
+        surface.blit(status_surf, (x + 20, y + 90))
+
+        # Action buttons for owned items
+        if owned:
+            use_btn_rect = pygame.Rect(x + width - 180, y + height - 45, 80, 30)
+            deselect_btn_rect = pygame.Rect(x + width - 90, y + height - 45, 80, 30)
+
+            # Use button
+            use_style = "warning" if not selected else "success"
+            use_text = "ACTIEF" if selected else "GEBRUIK"
+            draw_professional_button(surface, use_btn_rect, use_text, small_font, use_style, False, selected)
+
+            # Deselect button (only if selected)
+            if selected:
+                draw_professional_button(surface, deselect_btn_rect, "RESET", small_font, "danger")
+
+            return use_btn_rect, deselect_btn_rect if selected else None
+        else:
+            # Buy button
+            buy_btn_rect = pygame.Rect(x + width - 100, y + height - 45, 90, 30)
+            buy_style = "success" if can_afford else "danger"
+            buy_text = "KOPEN" if can_afford else "TE DUUR"
+            draw_professional_button(surface, buy_btn_rect, buy_text, small_font, buy_style, False, not can_afford)
+            return buy_btn_rect, None
 
     def calculate_max_scroll():
         """Calculate maximum scroll based on content"""
@@ -521,35 +514,22 @@ def show_shop(SCREEN, font, big_font, game_data):
                 selected_category = "trash"
             if obstacle_tab.handle_event(event):
                 selected_category = "obstacles"
-            if character_tab.handle_event(event):
-                selected_category = "character"
+
             # Item interactions
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mouse_pos = event.pos
+                # Calculate item positions and handle clicks
                 card_y = 180 - scroll_offset
                 card_width = 380
                 card_height = 160
                 cards_per_row = 2
                 margin = 20
 
-                if selected_category == "trash":
-                    current_items = TRASH_COLORS
-                    owned_key = "owned_trash_colors"
-                    selected_key = "selected_trash_color"
-                    price_dict = ITEM_PRICES
-                elif selected_category == "obstacles":
-                    current_items = OBSTACLE_COLORS
-                    owned_key = "owned_obstacle_colors"
-                    selected_key = "selected_obstacle_color"
-                    price_dict = ITEM_PRICES
-                elif selected_category == "character":
-                    current_items = CHARACTERS
-                    owned_key = "owned_characters"
-                    selected_key = "selected_character"
-                    price_dict = CHARACTER_PRICES
+                current_items = TRASH_COLORS if selected_category == "trash" else OBSTACLE_COLORS
+                owned_key = 'owned_trash_colors' if selected_category == "trash" else 'owned_obstacle_colors'
+                selected_key = 'selected_trash_color' if selected_category == "trash" else 'selected_obstacle_color'
 
                 item_index = 0
-                for name, data in current_items.items():
+                for name, colors in current_items.items():
                     if name == "Standaard":
                         continue
 
@@ -559,35 +539,39 @@ def show_shop(SCREEN, font, big_font, game_data):
                     x = 50 + col * (card_width + margin)
                     y = card_y + row * (card_height + margin)
 
-                    if y > -card_height and y < WINDOW_HEIGHT:
+                    if y > -card_height and y < WINDOW_HEIGHT:  # Only check visible cards
                         owned = name in game_data[owned_key]
-                        price = price_dict.get(name, 0)
+                        price = ITEM_PRICES.get(name, 0)
                         can_afford = game_data['total_trash'] >= price
                         selected = game_data[selected_key] == name
 
                         card_rect = pygame.Rect(x, y, card_width, card_height)
 
-                        # **CLICK HANDLING**
-                        if card_rect.collidepoint(mouse_pos):
-                            if owned:
-                                if not selected:
-                                    game_data[selected_key] = name  # Gebruik item
-                                else:
-                                    game_data[selected_key] = "Standaard"  # Deselect
+                        if owned:
+                            use_btn_rect = pygame.Rect(x + card_width - 180, y + card_height - 45, 80, 30)
+                            deselect_btn_rect = pygame.Rect(x + card_width - 90, y + card_height - 45, 80, 30)
+
+                            if use_btn_rect.collidepoint(mouse_pos) and not selected:
+                                game_data[selected_key] = name
                                 save_game_data(game_data)
-                            else:
-                                if can_afford:
-                                    game_data[owned_key].append(name)  # Koop item
-                                    game_data[selected_key] = name
-                                    game_data['total_trash'] -= price
-                                    save_game_data(game_data)
+                            elif selected and deselect_btn_rect.collidepoint(mouse_pos):
+                                game_data[selected_key] = "Standaard"
+                                save_game_data(game_data)
+                        else:
+                            buy_btn_rect = pygame.Rect(x + card_width - 100, y + card_height - 45, 90, 30)
+                            if buy_btn_rect.collidepoint(mouse_pos) and can_afford:
+                                game_data['total_trash'] -= price
+                                game_data[owned_key].append(name)
+                                game_data[selected_key] = name
+                                save_game_data(game_data)
 
                     item_index += 1
 
         # DRAWING
-        # Professionele gradient achtergrond die zachtjes van kleur verandert
+         # Professionele gradient achtergrond die zachtjes van kleur verandert
         time_now = pygame.time.get_ticks() / 1000  # seconden sinds start
         color_shift = (math.sin(time_now) + 1) / 2
+
 
         # Basis- en alternatieve kleuren
         base_top = (60, 90, 160)  # diepblauw
@@ -652,41 +636,20 @@ def show_shop(SCREEN, font, big_font, game_data):
         if obstacle_active:
             pygame.draw.rect(SCREEN, (255, 255, 255), obstacle_tab.rect, 2, border_radius=8)
 
-        trash_text = subtitle_font.render("TRASH", True, TEXT_PRIMARY)
-        obstacle_text = subtitle_font.render("OBSTACLES", True, TEXT_PRIMARY)
+        trash_text = subtitle_font.render("AFVAL", True, TEXT_PRIMARY)
+        obstacle_text = subtitle_font.render("OBSTAKELS", True, TEXT_PRIMARY)
 
         SCREEN.blit(trash_text, trash_text.get_rect(center=trash_tab.rect.center))
         SCREEN.blit(obstacle_text, obstacle_text.get_rect(center=obstacle_tab.rect.center))
 
-        character_active = selected_category == "character"
-        character_color = ACCENT_COLOR if character_active else BORDER_COLOR
-
-        pygame.draw.rect(SCREEN, character_color, character_tab.rect, border_radius=8)
-        if character_active:
-            pygame.draw.rect(SCREEN, (255, 255, 255), character_tab.rect, 2, border_radius=8)
-
-        char_text = subtitle_font.render("CHARACTER", True, TEXT_PRIMARY)
-        SCREEN.blit(char_text, char_text.get_rect(center=character_tab.rect.center))
         # Content area with clipping
         content_rect = pygame.Rect(0, 150, WINDOW_WIDTH, WINDOW_HEIGHT - 200)
         SCREEN.set_clip(content_rect)
 
         # Draw items
-        if selected_category == "trash":
-            current_items = TRASH_COLORS
-            owned_key = "owned_trash_colors"
-            selected_key = "selected_trash_color"
-            price_dict = ITEM_PRICES
-        elif selected_category == "obstacles":
-            current_items = OBSTACLE_COLORS
-            owned_key = "owned_obstacle_colors"
-            selected_key = "selected_obstacle_color"
-            price_dict = ITEM_PRICES
-        elif selected_category == "character":
-            current_items = CHARACTERS
-            owned_key = "owned_characters"
-            selected_key = "selected_character"
-            price_dict = CHARACTER_PRICES
+        current_items = TRASH_COLORS if selected_category == "trash" else OBSTACLE_COLORS
+        owned_key = 'owned_trash_colors' if selected_category == "trash" else 'owned_obstacle_colors'
+        selected_key = 'selected_trash_color' if selected_category == "trash" else 'selected_obstacle_color'
 
         card_y = 180 - scroll_offset
         card_width = 380
@@ -695,7 +658,7 @@ def show_shop(SCREEN, font, big_font, game_data):
         margin = 20
 
         item_index = 0
-        for name, data in current_items.items():
+        for name, colors in current_items.items():
             if name == "Standaard":
                 continue
 
@@ -705,30 +668,21 @@ def show_shop(SCREEN, font, big_font, game_data):
             x = 50 + col * (card_width + margin)
             y = card_y + row * (card_height + margin)
 
+            # Only draw visible cards
             if y > -card_height and y < WINDOW_HEIGHT:
                 owned = name in game_data[owned_key]
-                price = price_dict.get(name, 0)
+                price = ITEM_PRICES.get(name, 0)
                 can_afford = game_data['total_trash'] >= price
                 selected = game_data[selected_key] == name
 
-                if selected_category == "character":
-                    item_data = {
-                        'name': name,
-                        'preview': data["preview"],  # afbeelding uit dict
-                        'price': price,
-                        'owned': owned,
-                        'selected': selected,
-                        'can_afford': can_afford
-                    }
-                else:
-                    item_data = {
-                        'name': name,
-                        'colors': data,  # lijst met kleuren
-                        'price': price,
-                        'owned': owned,
-                        'selected': selected,
-                        'can_afford': can_afford
-                    }
+                item_data = {
+                    'name': name,
+                    'colors': colors,
+                    'price': price,
+                    'owned': owned,
+                    'selected': selected,
+                    'can_afford': can_afford
+                }
 
                 card_rect = pygame.Rect(x, y, card_width, card_height)
                 hovered = card_rect.collidepoint(mouse_pos)
@@ -742,7 +696,7 @@ def show_shop(SCREEN, font, big_font, game_data):
         # Scroll indicator
         if max_scroll > 0:
             scroll_bar_height = max(20, int((WINDOW_HEIGHT - 200) * (WINDOW_HEIGHT - 200) / (
-                    max_scroll + WINDOW_HEIGHT - 200)))
+                        max_scroll + WINDOW_HEIGHT - 200)))
             scroll_bar_y = 150 + int((scroll_offset / max_scroll) * (WINDOW_HEIGHT - 200 - scroll_bar_height))
 
             pygame.draw.rect(SCREEN, BORDER_COLOR, (WINDOW_WIDTH - 10, 150, 8, WINDOW_HEIGHT - 200), border_radius=4)
@@ -760,50 +714,46 @@ def show_shop(SCREEN, font, big_font, game_data):
 
         pygame.display.flip()
         clock.tick(FPS)
-
-
+ 
 def create_falling_trash(colors):
     x = random.randint(0, WINDOW_WIDTH - TRASH_SIZE)
     y = -TRASH_SIZE
     fall_speed = random.uniform(FALL_SPEED_MIN, FALL_SPEED_MAX)
     return FallingItem(x, y, TRASH_SIZE, TRASH_SIZE, fall_speed, 'trash', colors)
-
-
+ 
 def create_falling_obstacle(colors):
     x = random.randint(0, WINDOW_WIDTH - OBSTACLE_WIDTH)
     y = -OBSTACLE_HEIGHT
     fall_speed = random.uniform(FALL_SPEED_MIN, FALL_SPEED_MAX)
     return FallingItem(x, y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT, fall_speed, 'obstacle', colors)
-
-
+ 
 def schedule_next_spawn():
     return random.randint(SPAWN_INTERVAL_MIN, SPAWN_INTERVAL_MAX)
-
-
+ 
 def play_game(SCREEN, font, big_font, game_data):
     """Hoofdspel - eindloos overleven"""
     clock = pygame.time.Clock()
-
+   
     # Create player using custom class
     player = Player(PLAYER_HEIGHT, PLAYER_WIDTH, (255, 0, 0), PLAYER_X_START, PLAYER_Y_BASE)
-
+   
     # Game variabelen
     falling_items = []
     clouds = [pygame.Rect(random.randint(0, WINDOW_WIDTH), random.randint(20, 150), 100, 40) for _ in range(5)]
-
+   
     score = 0
     game_start = pygame.time.get_ticks()
     last_spawn = pygame.time.get_ticks()
     next_spawn = schedule_next_spawn()
-
+   
     running = True
     game_over = False
     keys_pressed = set()
-
+   
     # Kleuren ophalen
     trash_colors = TRASH_COLORS[game_data['selected_trash_color']]
     obstacle_colors = OBSTACLE_COLORS[game_data['selected_obstacle_color']]
-
+   
     while running:
         dt = clock.tick(FPS)
         for event in pygame.event.get():
@@ -818,24 +768,24 @@ def play_game(SCREEN, font, big_font, game_data):
                         player.Jump()
             if event.type == pygame.KEYUP:
                 keys_pressed.discard(event.key)
-
+       
         if not game_over:
             # Beweging using custom class methods
             if pygame.K_LEFT in keys_pressed or pygame.K_a in keys_pressed:
                 player.MoveLeft(PLAYER_MOVE_SPEED)
             if pygame.K_RIGHT in keys_pressed or pygame.K_d in keys_pressed:
                 player.MoveRight(PLAYER_MOVE_SPEED)
-
+           
             # Update player physics
             player.Update()
-
+           
             # Wolken
             for c in clouds:
                 c.x -= 1
                 if c.right < 0:
                     c.x = WINDOW_WIDTH + random.randint(50, 200)
                     c.y = random.randint(20, 150)
-
+           
             # Spawn objecten
             now = pygame.time.get_ticks()
             if now - last_spawn >= next_spawn:
@@ -845,13 +795,13 @@ def play_game(SCREEN, font, big_font, game_data):
                     falling_items.append(create_falling_obstacle(obstacle_colors))
                 last_spawn = now
                 next_spawn = schedule_next_spawn()
-
+           
             # Update objecten using custom class method
             for item in falling_items[:]:
                 item.Update()
                 if item.is_off_SCREEN():
                     falling_items.remove(item)
-
+           
             # Collisions using custom class method
             for item in falling_items[:]:
                 if player.collides_with(item):
@@ -860,60 +810,70 @@ def play_game(SCREEN, font, big_font, game_data):
                         score += 1
                     else:
                         game_over = True
+                         
+                        # Speel game-over geluid als geluid aan staat
+                        if game_data.get("sound_enabled", True):
+                            try:
+                                pygame.mixer.music.stop()
+                                game_over_sound = pygame.mixer.Sound("meat-on-the-grill-104901.mp3")
+                                game_over_sound.play()
+                                pygame.mixer.music.play(-1)
+                            except:
+                                print("Game over sound niet gevonden")
+
                         # Update stats
                         game_data['total_trash'] += score
                         if score > game_data['high_score']:
                             game_data['high_score'] = score
                         save_game_data(game_data)
                         break
-
+       
+       
         # Tekenen
         draw_background(SCREEN, clouds)
-
+       
         # Draw falling items using custom draw methods
         for item in falling_items:
             if item.type == 'trash':
                 item.DrawTrash(SCREEN)
             else:
                 item.DrawObstacle(SCREEN)
-
+       
         # Draw player using custom draw method
         player.DrawBurger(SCREEN)
-
+       
         # UI
         render_text(SCREEN, f"Score: {score}", font, (15, 15), TEXT_COLOR, TEXT_SHADOW)
-        render_text(SCREEN, f"Highest: {game_data['high_score']}", font, (15, 45), TEXT_COLOR, TEXT_SHADOW)
-
+        render_text(SCREEN, f"Hoogste: {game_data['high_score']}", font, (15, 45), TEXT_COLOR, TEXT_SHADOW)
+       
         if not game_over:
-            render_text(SCREEN, "SURVIVE AS LONG AS POSSIBLE!", font, (15, WINDOW_HEIGHT - 60), TEXT_COLOR, TEXT_SHADOW)
-            render_text(SCREEN, "Arrows = move, Spacebar = jump", font, (15, WINDOW_HEIGHT - 30),
-                        TEXT_COLOR, TEXT_SHADOW)
+            render_text(SCREEN, "OVERLEEF ZO LANG MOGELIJK!", font, (15, WINDOW_HEIGHT - 60), TEXT_COLOR, TEXT_SHADOW)
+            render_text(SCREEN, "WASD/Pijltjes = bewegen, Spatie = springen", font, (15, WINDOW_HEIGHT - 30), TEXT_COLOR, TEXT_SHADOW)
         else:
             overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
             overlay.set_alpha(180)
             overlay.fill((0, 0, 0))
             SCREEN.blit(overlay, (0, 0))
-
+           
             msg1 = f"GAME OVER! Score: {score}"
             msg2 = f"Afval verdiend: +{score}"
             msg3 = "Druk ESC voor menu"
-
+           
             y_center = WINDOW_HEIGHT // 2
             surf1 = big_font.render(msg1, True, (255, 80, 80))
             surf2 = font.render(msg2, True, (80, 255, 80))
             surf3 = font.render(msg3, True, TEXT_COLOR)
-
-            SCREEN.blit(surf1, surf1.get_rect(center=(WINDOW_WIDTH // 2, y_center - 40)))
-            SCREEN.blit(surf2, surf2.get_rect(center=(WINDOW_WIDTH // 2, y_center + 20)))
-            SCREEN.blit(surf3, surf3.get_rect(center=(WINDOW_WIDTH // 2, y_center + 60)))
-
+           
+            SCREEN.blit(surf1, surf1.get_rect(center=(WINDOW_WIDTH//2, y_center - 40)))
+            SCREEN.blit(surf2, surf2.get_rect(center=(WINDOW_WIDTH//2, y_center + 20)))
+            SCREEN.blit(surf3, surf3.get_rect(center=(WINDOW_WIDTH//2, y_center + 60)))
+       
         pygame.display.flip()
-
 
 # Initialize game data
 game_data = load_game_data()
 
-# setup music
+#setup music
 pygame.mixer.init()
 MUSIC_FILE = "Patty Daddies.mp3"
 
@@ -925,6 +885,7 @@ if game_data.get("sound_enabled", True):
     except:
         print("Muziekbestand niet gevonden of kan niet geladen worden")
 
+
 # Main game loop
 while running:
     # cap the framerate at 60 fps
@@ -935,10 +896,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
             current_state = "quit"
-    playerVisual = Animation()
-    selected_character = game_data['selected_character']
-    playerVisual.setPaths([CHARACTERS[selected_character]["preview"]])
-    playerVisual.setSize((PLAYER_WIDTH, PLAYER_HEIGHT))
+
     # state machine
     if current_state == "menu":
         current_state = show_start_menu(SCREEN, FONT, big_font, game_data)
@@ -947,7 +905,7 @@ while running:
     elif current_state == "play":
         result, score = play_game(SCREEN, FONT, big_font, game_data)
         current_state = result
-    # Als een state "quit" retourneert, sluit het spel
+# Als een state "quit" retourneert, sluit het spel
     if current_state == "quit":
         running = False
         pygame.quit()
