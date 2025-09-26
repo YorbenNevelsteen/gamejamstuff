@@ -1,0 +1,19 @@
+{
+  "high_score": 3,
+  "total_trash": 3903,
+  "sound_enabled": true,
+  "owned_trash_colors": [
+    "Galaxy",
+    "Regenboog"
+  ],
+  "owned_obstacle_colors": [
+    "Paars"
+  ],
+  "selected_trash_color": "Regenboog",
+  "selected_obstacle_color": "Paars",
+  "owned_characters": [
+    "Standaard",
+    "Jitse"
+  ],
+  "selected_character": "Jitse"
+}
